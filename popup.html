@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scan Tracker</title>
+  <meta charset="utf-8">
+  <style>
+    /* --- Variables (idem) --- */
+    :root {
+      --primary-color: #007aff;
+      --primary-hover: #0056b3;
+      --danger-color: #e74c3c;
+      --danger-hover-bg: #ffebee;
+      --success-color: #2ecc71;
+      --success-hover: #27ae60;
+      --secondary-color: #222222;
+      --secondary-hover: #383838;
+      
+      --bg-color: #111111;
+      --bg-color-alt: #222222;
+      --border-color: #313131;
+      --text-primary: #ffffff;
+      --text-secondary: #d1d1d1;
+      --active-tab-bg: #2c2c2c;
+      
+      --alert-bg: #fff9e6;
+      --alert-border: #ffc107;
+      
+      --radius-sm: 4px;
+      --radius-md: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 320px;
+      max-height: 550px;
+      overflow-y: auto;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      padding: 12px;
+      position: relative; /* Important pour le z-index des particules */
+    }
+
+    /* --- NOUVEAU : PARTICULES DE FEU BLEU --- */
+    .fire-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1; /* Place les particules DERRIÈRE tout le contenu */
+      pointer-events: none; /* Permet de cliquer à travers */
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      bottom: -10px; /* Commence en bas */
+      background-color: rgba(0, 122, 255, 0.6); /* Bleu semi-transparent */
+      border-radius: 50%;
+      box-shadow: 0 0 10px #007aff, 0 0 20px #00ffff; /* Effet de lueur (Glow) */
+      opacity: 0;
+      animation: rise 5s infinite ease-in;
+    }
+
+    @keyframes rise {
+      0% {
+        bottom: -10px;
+        opacity: 0;
+        transform: translateX(0) scale(1);
+      }
+      20% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.8;
+        /* Petit mouvement de vague */
+        transform: translateX(-10px) scale(1.2); 
+      }
+      100% {
+        bottom: 100%; /* Monte tout en haut */
+        opacity: 0;
+        transform: translateX(10px) scale(0.5);
+      }
+    }
+
+    /* Randomisation des particules (Taille, Position, Vitesse) */
+    .particle:nth-child(1) { left: 10%; width: 6px; height: 6px; animation-duration: 6s; animation-delay: 0s; }
+    .particle:nth-child(2) { left: 20%; width: 4px; height: 4px; animation-duration: 4s; animation-delay: 1s; }
+    .particle:nth-child(3) { left: 35%; width: 7px; height: 7px; animation-duration: 7s; animation-delay: 2s; }
+    .particle:nth-child(4) { left: 50%; width: 5px; height: 5px; animation-duration: 5s; animation-delay: 0.5s; }
+    .particle:nth-child(5) { left: 65%; width: 6px; height: 6px; animation-duration: 6s; animation-delay: 3s; }
+    .particle:nth-child(6) { left: 80%; width: 4px; height: 4px; animation-duration: 4s; animation-delay: 1.5s; }
+    .particle:nth-child(7) { left: 90%; width: 5px; height: 5px; animation-duration: 5s; animation-delay: 4s; }
+    .particle:nth-child(8) { left: 15%; width: 3px; height: 3px; animation-duration: 8s; animation-delay: 2.5s; }
+    .particle:nth-child(9) { left: 55%; width: 6px; height: 6px; animation-duration: 4.5s; animation-delay: 0.2s; }
+    .particle:nth-child(10){ left: 75%; width: 5px; height: 5px; animation-duration: 5.5s; animation-delay: 1.8s; }
+    /* --- FIN PARTICULES --- */
+    
+    /* --- NOUVEAU: Système d'onglets --- */
+    .tabs {
+      display: flex;
+      margin-bottom: 12px;
+      background-color: var(--bg-color-alt);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      /* Ajout d'une légère transparence pour voir les particules derrière */
+      backdrop-filter: blur(2px); 
+      background-color: rgba(34, 34, 34, 0.9); 
+    }
+    
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    
+    .tab-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+      box-shadow: 0 0 10px rgba(0, 122, 255, 0.5); /* Petit glow sur l'onglet actif */
+    }
+    
+    .tab-btn:hover:not(.active) {
+      background-color: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    /* --- Boutons --- */
+    .btn {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-weight: 500;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+      text-align: center;
+      color: white;
+      /* Petit effet de brillance */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .btn:focus { outline: none; box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3); }
+
+    #save-btn { background-color: var(--primary-color); }
+    #save-btn:hover { background-color: var(--primary-hover); }
+    
+    #save-btn.toread-mode { background-color: #9b59b6; } 
+    #save-btn.toread-mode:hover { background-color: #8e44ad; }
+
+    #manual-save-btn { background-color: var(--success-color); margin-top: 8px; }
+    #manual-save-btn:hover { background-color: var(--success-hover); }
+
+    .btn-secondary {
+      background-color: var(--secondary-color);
+      font-size: 13px;
+      padding: 8px 10px;
+      margin-top: 8px;
+      border: 1px solid var(--border-color);
+    }
+    .btn-secondary:hover { background-color: var(--secondary-hover); }
+
+    /* --- Ajout manuel --- */
+    #manual-add-section {
+      background-color: rgba(255, 249, 230, 0.95); /* Légère transparence */
+      border: 1px solid var(--alert-border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-top: 12px;
+    }
+    #manual-add-section h4 { margin-bottom: 8px; color: #856404; font-weight: 600; }
+    #manual-add-section p { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+    #manual-name {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: #333;
+    }
+
+    /* --- Barre de recherche --- */
+    #search-container {
+      position: relative;
+      margin-top: 16px;
+      margin-bottom: 16px;
+    }
+    #search-bar {
+      width: 100%;
+      padding: 10px 12px;
+      padding-right: 30px;
+      font-size: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background-color: rgba(34, 34, 34, 0.9); /* Transparence */
+      backdrop-filter: blur(2px);
+      color: white;
+    }
+    #search-bar:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+    }
+    #clear-search-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    #library-container { margin-top: 16px; }
+    #library-container > p { color: var(--text-secondary); text-align: center; padding: 10px; }
+
+    /* --- Styles Communs Dossiers (Historique & À Lire) --- */
+    .manga-folder {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      overflow: hidden;
+      /* Fond sombre semi-transparent pour voir les particules passer derrière */
+      background-color: rgba(34, 34, 34, 0.85); 
+      backdrop-filter: blur(3px);
+      opacity: 0.8;
+    }
+
+    .manga-folder h3 {
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .manga-folder.history-item h3 { border-bottom: 1px solid var(--border-color); }
+    .manga-folder.history-item.collapsed h3 { border-bottom-color: transparent; }
+    
+    .manga-folder.toread-item h3 {
+        border-bottom: none;
+        cursor: default;
+    }
+    
+    /* --- Éléments internes --- */
+    .title-icons { display: flex; align-items: center; }
+    
+    .icon-btn {
+      font-size: 20px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: var(--radius-sm);
+      line-height: 1;
+      transition: all 0.2s ease;
+      margin-left: 8px;
+    }
+    .icon-btn:hover { background-color: #383838; }
+    .delete-manga-btn:hover { color: var(--danger-color); background-color: rgba(231, 76, 60, 0.2); }
+    .edit-manga-btn:hover { color: var(--primary-color); background-color: rgba(0, 122, 255, 0.2); }
+    
+    .toggle-icon {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-right: 8px;
+      transition: transform 0.2s ease;
+    }
+    
+    .title-edit-input {
+      font-size: 15px;
+      font-weight: 600;
+      padding: 4px 6px;
+      flex-grow: 1;
+      border: 1px solid var(--primary-color);
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-color);
+      color: white;
+    }
+
+    /* --- Liste des liens (Historique) --- */
+    .manga-folder ul {
+      list-style: none;
+      padding: 4px 0;
+      background-color: rgba(17, 17, 17, 0.5); /* Plus sombre */
+      max-height: 1000px;
+      transition: max-height 0.3s ease-out;
+      overflow: hidden;
+    }
+    .manga-folder.collapsed ul { max-height: 0; padding-top: 0; padding-bottom: 0; }
+    .manga-folder.collapsed .toggle-icon { transform: rotate(-90deg); }
+
+    .manga-folder li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.2s ease;
+    }
+    .manga-folder li:hover { background-color: rgba(50, 50, 50, 0.5); }
+    
+    .manga-folder li a, .toread-link {
+      text-decoration: none;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      flex-grow: 1;
+      overflow: hidden;
+    }
+    
+    .favicon { width: 16px; height: 16px; margin-right: 10px; flex-shrink: 0; }
+    .domain-name {
+      font-size: 14px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .delete-link-btn {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 2px 8px;
+      margin-right: 8px;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+    .manga-folder li:hover .delete-link-btn { color: var(--danger-color); }
+
+    /* --- Options --- */
+    #options-container {
+      margin-top: 20px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 12px;
+      background-color: rgba(34, 34, 34, 0.8);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      backdrop-filter: blur(2px);
+    }
+    #options-container h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="fire-container">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="tabs">
+    <button id="tab-history" class="tab-btn active">Enregistrer</button>
+    <button id="tab-toread" class="tab-btn">À Lire</button>
+  </div>
+
+  <button id="save-btn" class="btn">Enregistrer ce scan</button>
+  
+  <div id="manual-add-section" style="display: none;">
+    <h4>Impossible de deviner le nom</h4>
+    <p>Veuillez entrer le nom de l'œuvre manuellement :</p>
+    <input type="text" id="manual-name" placeholder="Ex: One Piece">
+    <button id="manual-save-btn" class="btn">Enregistrer</button>
+  </div>
+
+  <div id="search-container">
+    <input type="text" id="search-bar" placeholder="Rechercher une œuvre...">
+    <span id="clear-search-btn" style="display: none;">&times;</span>
+  </div>
+
+  <div id="library-container">
+    <p>Chargement de votre bibliothèque...</p>
+  </div>
+  
+  <div id="options-container">
+    <h3>Options</h3>
+    <button id="export-btn" class="btn btn-secondary">Exporter la bibliothèque (JSON)</button>
+    <button id="import-btn" class="btn btn-secondary">Importer la bibliothèque (JSON)</button>
+    <input type="file" id="import-file-input" accept=".json" style="display: none;">
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+/* Le conteneur du popup */
+#scan-tracker-toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background-color: rgba(34, 34, 34, 0.95);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  z-index: 999999; /* Toujours au-dessus */
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid #333;
+  backdrop-filter: blur(5px);
+  
+  /* Animation d'entrée */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  pointer-events: none; /* Inactif tant que caché */
+}
+
+/* Quand il est visible */
+#scan-tracker-toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+#scan-tracker-toast h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+#scan-tracker-toast p {
+  margin: 0;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.st-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+/* Le bouton Enregistrer */
+#st-save-btn {
+  background-color: #007aff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+#st-save-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Le bouton Fermer (croix) */
+#st-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #777;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+#st-close-btn:hover {
+  color: #fff;
+}

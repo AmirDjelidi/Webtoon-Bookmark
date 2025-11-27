@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Webtoon Bookmark",
+  "version": "1.1",
+  "description": "Enregistre le dernier scan lu et l'organise par œuvre.",
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "120": "icons/icon120.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "120": "icons/icon120.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }]
+}
