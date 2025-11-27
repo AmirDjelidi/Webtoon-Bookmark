@@ -356,6 +356,42 @@
       color: var(--text-primary);
       margin-bottom: 8px;
     }
+    /* NOUVEAU: Barre de Statistiques */
+    #stats-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 10px;
+      background-color: rgba(34, 34, 34, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(2px);
+    }
+
+    .stat-item {
+      text-align: center;
+      flex: 1;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .stat-item:last-child {
+      border-right: none;
+    }
+
+    .stat-value {
+      display: block;
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--primary-color);
+      text-shadow: 0 0 10px rgba(0, 122, 255, 0.4);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
   </style>
 </head>
 <body>
@@ -376,7 +412,23 @@
     <button id="tab-history" class="tab-btn active">Enregistrer</button>
     <button id="tab-toread" class="tab-btn">À Lire</button>
   </div>
-
+  <div id="main-view">
+    
+    <div id="stats-bar">
+      <div class="stat-item">
+        <span class="stat-value" id="stat-mangas">0</span>
+        <span class="stat-label">Oeuvres</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="stat-chapters">0</span>
+        <span class="stat-label">URLS</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="stat-toread">0</span>
+        <span class="stat-label">À Lire</span>
+      </div>
+    </div>
+  </div>
   <button id="save-btn" class="btn">Enregistrer ce scan</button>
   
   <div id="manual-add-section" style="display: none;">

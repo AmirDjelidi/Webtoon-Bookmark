@@ -184,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       displayToRead(searchFilter);
     }
+    updateStats();
   }
 
   // Affichage Historique (Ton ancien displayLibrary adapté)
@@ -652,5 +653,40 @@ document.addEventListener('DOMContentLoaded', () => {
         else delete collapsedStates[mangaName];
         storage.set({ collapsedStates: collapsedStates });
     });
+  }
+
+
+  function updateStats() {
+    storage.get(['mangaLibrary', 'toReadLibrary'], (result) => {
+      const history = result.mangaLibrary || {};
+      const toRead = result.toReadLibrary || {};
+
+      // 1. Compter les mangas (Historique)
+      const mangaCount = Object.keys(history).length;
+
+      // 2. Compter les chapitres (Total des liens)
+      let chapterCount = 0;
+      Object.values(history).forEach(manga => {
+        if (manga.links) {
+          chapterCount += manga.links.length;
+        }
+      });
+
+      // 3. Compter la liste "À Lire"
+      const toReadCount = Object.keys(toRead).length;
+
+      // 4. Affichage avec petite animation (optionnel, mais sympa)
+      animateValue("stat-mangas", mangaCount);
+      animateValue("stat-chapters", chapterCount);
+      animateValue("stat-toread", toReadCount);
+    });
+  }
+
+  // Petite fonction pour animer les chiffres qui montent
+  function animateValue(id, end) {
+    const obj = document.getElementById(id);
+    if (!obj) return;
+    // Mise à jour directe pour l'instant (plus simple et performant)
+    obj.textContent = end;
   }
 });
