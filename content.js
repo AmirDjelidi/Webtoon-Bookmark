@@ -82,55 +82,59 @@ function hideToast() {
 // --- LOGIQUE DE SAUVEGARDE (Copiée et adaptée pour le Content Script) ---
 
 function saveCurrentPage() {
-  const url = window.location.href;
-  const title = document.title;
-  const mangaName = parseMangaName(url);
-  const newEntry = { url, title, savedAt: new Date().toISOString() };
-  const btn = document.querySelector('#st-save-btn');
+    const url = window.location.href;
+    const title = document.title;
+    const mangaName = parseMangaName(url);
+    const newEntry = { url, title, savedAt: new Date().toISOString() };
+    const btn = document.querySelector('#st-save-btn');
 
-  // Petit effet visuel
-  btn.textContent = "Sauvegarde...";
+    // Petit effet visuel
+    btn.textContent = "Sauvegarde...";
 
-  chrome.storage.sync.get(['mangaLibrary'], (result) => {
-    const library = result.mangaLibrary || {};
-    
-    // -- Logique identique à popup.js --
-    if (!library[mangaName]) {
-      library[mangaName] = { lastUpdated: new Date().toISOString(), links: [] };
-    } else {
-      library[mangaName].lastUpdated = new Date().toISOString();
-    }
-
-    const work = library[mangaName];
-    const hostname = new URL(url).hostname;
-    
-    const existingIndex = work.links.findIndex(l => {
-        try { return new URL(l.url).hostname === hostname; } catch(e) { return false; }
-    });
-
-    if (existingIndex !== -1) {
-      work.links[existingIndex] = newEntry;
-    } else {
-      work.links.push(newEntry);
-    }
-    
-    // Tri
-    work.links.sort((a, b) => {
-        try { return new URL(a.url).hostname.localeCompare(new URL(b.url).hostname); } catch(e) { return 0; }
-    });
-
-    chrome.storage.sync.set({ mangaLibrary: library }, () => {
-      // Succès
-      btn.textContent = "Sauvegardé !";
-      btn.style.backgroundColor = "#2ecc71";
+    chrome.storage.sync.get(['mangaLibrary'], (result) => {
+      const library = result.mangaLibrary || {};
       
-      // On cache le popup après 2 secondes
-      setTimeout(() => {
-        hideToast();
-      }, 2000);
+      if (!library[mangaName]) {
+        library[mangaName] = { lastUpdated: new Date().toISOString(), links: [] };
+      } else {
+        library[mangaName].lastUpdated = new Date().toISOString();
+      }
+  
+      const work = library[mangaName];
+      const hostname = new URL(url).hostname;
+      
+      const existingIndex = work.links.findIndex(l => {
+          try { return new URL(l.url).hostname === hostname; } catch(e) { return false; }
+      });
+  
+      if (existingIndex !== -1) {
+        work.links[existingIndex] = newEntry;
+      } else {
+        work.links.push(newEntry);
+      }
+      
+      work.links.sort((a, b) => {
+          try { return new URL(a.url).hostname.localeCompare(new URL(b.url).hostname); } catch(e) { return 0; }
+      });
+
+      // --- NOUVEAU : GESTION DE LA PASTILLE VERTE ---
+      if (work.hasNewChapter && work.latestChapter) {
+          const currentChapNum = parseFloat(parseChapterNumber(url));
+          if (currentChapNum && currentChapNum >= work.latestChapter) {
+              work.hasNewChapter = false;
+          }
+      }
+      // ----------------------------------------------
+  
+      chrome.storage.sync.set({ mangaLibrary: library }, () => {
+        btn.textContent = "Sauvegardé !";
+        btn.style.backgroundColor = "#2ecc71";
+        setTimeout(() => {
+          hideToast();
+        }, 2000);
+      });
     });
-  });
-}
+  }
 
 // --- UTILITAIRES (Copiés de popup.js) ---
 // Note: Dans un vrai projet pro, on utiliserait des modules pour ne pas dupliquer ce code.

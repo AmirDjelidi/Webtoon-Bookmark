@@ -275,7 +275,8 @@
       font-size: 16px;
       color: var(--text-secondary);
       margin-right: 8px;
-      transition: transform 0.2s ease;
+      display: inline-block; /* Important pour que la rotation marche */
+      transition: transform 0.2s ease; /* Durée de l'animation */
     }
     
     .title-edit-input {
@@ -392,6 +393,22 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
+    .new-chapter-badge {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background-color: #2ecc71; /* Vert */
+      border-radius: 50%;
+      margin-left: 8px;
+      box-shadow: 0 0 5px #2ecc71;
+      animation: pulse 2s infinite;
+    }
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(46, 204, 113, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}
   </style>
 </head>
 <body>
@@ -419,6 +436,11 @@
         <span class="stat-value" id="stat-mangas">0</span>
         <span class="stat-label">Oeuvres</span>
       </div>
+      
+      <div class="stat-item">
+        <span class="stat-value" id="stat-new" style="color: #2ecc71;">0</span>
+        <span class="stat-label">Sorties</span>
+      </div>
       <div class="stat-item">
         <span class="stat-value" id="stat-chapters">0</span>
         <span class="stat-label">URLS</span>
@@ -428,7 +450,6 @@
         <span class="stat-label">À Lire</span>
       </div>
     </div>
-  </div>
   <button id="save-btn" class="btn">Enregistrer ce scan</button>
   
   <div id="manual-add-section" style="display: none;">

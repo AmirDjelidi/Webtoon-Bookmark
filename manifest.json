@@ -5,7 +5,11 @@
   "description": "Enregistre le dernier scan lu et l'organise par œuvre.",
   "permissions": [
     "storage",
-    "tabs"
+    "tabs",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://mangas-origines.fr/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -14,6 +18,9 @@
       "32": "icons/icon32.png",
       "120": "icons/icon120.png"
     }
+  },
+  "background": {
+    "service_worker": "background.js"
   },
   "icons": {
     "16": "icons/icon16.png",
