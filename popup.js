@@ -578,4 +578,93 @@ document.addEventListener('DOMContentLoaded', () => {
         storage.set({ collapsedStates: collapsedStates });
     });
   }
+  const SITEMAP_URL = "https://mangas-origines.fr/wp-manga-chapters-sitemap.xml";
+  const refreshBtn = document.getElementById('refresh-updates-btn');
+
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', checkUpdatesManual);
+  }
+
+  async function checkUpdatesManual() {
+    // 1. Animation visuelle (ça tourne)
+    refreshBtn.classList.add('spinning');
+    
+    try {
+      // 2. Récupérer la bibliothèque
+      const data = await new Promise(resolve => storage.get(['mangaLibrary'], resolve));
+      const library = data.mangaLibrary || {};
+      const mangaNames = Object.keys(library);
+
+      if (mangaNames.length === 0) {
+        alert("Ajoutez d'abord des mangas à votre historique !");
+        return;
+      }
+
+      // 3. Récupérer le XML
+      const response = await fetch(SITEMAP_URL, { cache: "no-store" });
+      if (!response.ok) throw new Error("Erreur accès site (Cloudflare ?)");
+      
+      const xmlText = await response.text();
+      let updatesFound = 0;
+
+      // 4. Analyse (même logique qu'avant)
+      for (const name of mangaNames) {
+        const mangaData = library[name];
+        
+        // Trouver le dernier lu
+        let lastReadChap = 0;
+        if (mangaData.links) {
+            mangaData.links.forEach(l => {
+                const n = parseFloat(parseChapterNumber(l.url));
+                if (n > lastReadChap) lastReadChap = n;
+            });
+        }
+        if (!lastReadChap) continue;
+
+        // Regex pour trouver dans le XML
+        const slug = name.toLowerCase().replace(/ /g, '-').replace(/'/g, '');
+        const regex = new RegExp(`${slug}.*?chapitre-(\\d+(?:\\.\\d+)?)`, 'gi');
+        
+        let match;
+        let maxChapterInXml = 0;
+
+        while ((match = regex.exec(xmlText)) !== null) {
+          const chapNum = parseFloat(match[1]);
+          if (chapNum > maxChapterInXml) maxChapterInXml = chapNum;
+        }
+
+        // Comparaison
+        if (maxChapterInXml > lastReadChap) {
+          library[name].hasNewChapter = true;
+          library[name].latestChapter = maxChapterInXml;
+          updatesFound++;
+        } else {
+           // Si on est à jour, on nettoie (au cas où)
+           if (library[name].hasNewChapter) {
+               library[name].hasNewChapter = false;
+           }
+        }
+      }
+
+      // 5. Sauvegarde et Rafraîchissement
+      storage.set({ mangaLibrary: library }, () => {
+        updateStats();      // Met à jour les chiffres en haut
+        displayLibrary(searchBar.value); // Met à jour la liste (pastilles vertes)
+        
+        // Feedback utilisateur
+        if (updatesFound > 0) {
+            // Optionnel : petit flash ou couleur
+            document.getElementById('stat-new').style.textShadow = "0 0 10px #2ecc71";
+            setTimeout(() => document.getElementById('stat-new').style.textShadow = "none", 2000);
+        }
+      });
+
+    } catch (error) {
+      console.error(error);
+      alert("Impossible de vérifier les sorties.\nLe site est peut-être protégé (Cloudflare) ou inaccessible.");
+    } finally {
+      // Arrêter l'animation
+      refreshBtn.classList.remove('spinning');
+    }
+  }
 });
